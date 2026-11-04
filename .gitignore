@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment & Local Secrets
+.env
+.env.local
+
+# Build Outputs
+dist/
+build/
+*.egg-info/
+
+# Local SQLite databases (schema & seed SQL are tracked in git)
+*.db
+*.sqlite3
+
+# IDE & Editor caches
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
