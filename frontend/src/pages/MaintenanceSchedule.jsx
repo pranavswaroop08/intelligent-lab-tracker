@@ -29,25 +29,25 @@ export default function MaintenanceSchedule() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <CalendarCheck className="w-5 h-5 text-amber-400" />
-            Instrument Calibration & Metrology Schedule
+          <h2 className="text-2xl font-extrabold text-[#0b3c68] flex items-center gap-2">
+            <CalendarCheck className="w-6 h-6 text-[#13b5ea]" />
+            Metrology Calibration Interval Schedules (ISO/IEC 17025)
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            ISO/IEC 17025 Compliant Calibration Interval Tracking & Metrological Traceability
+          <p className="text-xs text-slate-500 mt-0.5">
+            Accredited metrological calibration intervals, drift monitoring, and traceability certificates
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400">Horizon:</span>
+          <span className="text-slate-500 font-semibold">Forecast Window:</span>
           <select
             value={daysWindow}
             onChange={(e) => setDaysWindow(parseInt(e.target.value))}
-            className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200"
+            className="px-3 py-1.5 rounded-md bg-white border border-slate-300 text-xs text-slate-700 font-medium"
           >
             <option value="30">Next 30 Days</option>
             <option value="60">Next 60 Days</option>
@@ -59,61 +59,61 @@ export default function MaintenanceSchedule() {
 
       {/* Upcoming Calibrations Due Cards */}
       <div className="space-y-3">
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
-          Active Calibration Due Queue ({schedule.length} Instruments)
+        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+          Calibration Due Queue ({schedule.length} Instruments)
         </div>
 
         {schedule.length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-400 bg-slate-900/40 rounded-2xl border border-slate-800">
-            ✅ All laboratory assets are currently within their accredited calibration validity window.
+          <div className="p-8 text-center text-xs text-emerald-700 bg-emerald-50 rounded-2xl border border-emerald-200">
+            ✅ All laboratory instrumentation is currently within accredited metrology validity windows.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {schedule.map((item, idx) => {
               const a = item.asset;
               return (
                 <div
                   key={idx}
-                  className="glass-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between hover:border-slate-700"
+                  className="clean-card rounded-2xl p-5 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">
                         {a.asset_tag}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        item.priority === 'URGENT' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                        item.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                        'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                        item.priority === 'URGENT' ? 'bg-rose-100 text-rose-700 border border-rose-300 animate-pulse' :
+                        item.priority === 'HIGH' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                        'bg-cyan-100 text-cyan-800'
                       }`}>
                         {item.priority} PRIORITY
                       </span>
                     </div>
 
-                    <h3 className="font-semibold text-slate-100 text-xs leading-snug">{a.name}</h3>
-                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">{a.manufacturer} · {a.category}</p>
+                    <h3 className="font-bold text-sm text-[#0b3c68] leading-snug">{a.name}</h3>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5">{a.manufacturer} · {a.category}</p>
 
-                    <div className="mt-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] space-y-1">
-                      <div className="flex justify-between text-slate-400">
+                    <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                      <div className="flex justify-between text-slate-500">
                         <span>Calibration Due:</span>
-                        <span className={`font-mono font-bold ${item.is_overdue ? 'text-rose-400' : 'text-slate-200'}`}>
+                        <span className={`font-mono font-bold ${item.is_overdue ? 'text-rose-600' : 'text-slate-800'}`}>
                           {a.next_calibration_due} ({item.days_remaining}d left)
                         </span>
                       </div>
-                      <div className="flex justify-between text-slate-400">
+                      <div className="flex justify-between text-slate-500">
                         <span>Assigned Room:</span>
-                        <span className="text-slate-300">{a.lab_name}</span>
+                        <span className="text-slate-800 font-medium">{a.lab_name}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex justify-end">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                     <button
                       onClick={() => setActiveCalibrateAsset(a)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold text-xs transition"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#13b5ea] hover:bg-[#0da1d2] text-white font-bold text-xs uppercase tracking-wider transition shadow-xs"
                     >
                       <Wrench className="w-3.5 h-3.5" />
-                      Perform Calibration
+                      LOG CALIBRATION
                     </button>
                   </div>
                 </div>
@@ -124,18 +124,18 @@ export default function MaintenanceSchedule() {
       </div>
 
       {/* Historical Metrology Calibration Log */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-cyan-400" />
-            <h3 className="font-semibold text-xs text-slate-200">Historical Metrology Certificates & Traceability Records</h3>
+            <Award className="w-4 h-4 text-[#13b5ea]" />
+            <h3 className="font-bold text-xs text-[#0b3c68] uppercase tracking-wider">Historical Metrology Certificates & Traceability Records</h3>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-400 font-mono uppercase text-[10px]">
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">Calibration Date</th>
                 <th className="py-3 px-4">Instrument & Tag</th>
                 <th className="py-3 px-4">Technician / Organization</th>
@@ -144,21 +144,21 @@ export default function MaintenanceSchedule() {
                 <th className="py-3 px-4 text-right">Certificate #</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {calibrations.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-800/40 transition">
-                  <td className="py-3 px-4 font-mono text-slate-300">{c.calibration_date}</td>
-                  <td className="py-3 px-4 font-semibold text-slate-200">
+                <tr key={c.id} className="hover:bg-slate-50 transition">
+                  <td className="py-3 px-4 font-mono text-slate-500">{c.calibration_date}</td>
+                  <td className="py-3 px-4 font-bold text-[#0b3c68]">
                     <div>{c.asset_name}</div>
-                    <div className="text-[10px] text-cyan-400 font-mono">{c.asset_tag}</div>
+                    <div className="text-[10px] text-[#00a8cc] font-mono">{c.asset_tag}</div>
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
-                    <div>{c.technician_name}</div>
-                    <div className="text-[10px] text-slate-500">{c.technician_organization}</div>
+                  <td className="py-3 px-4 text-slate-700">
+                    <div className="font-semibold">{c.technician_name}</div>
+                    <div className="text-[10px] text-slate-400">{c.technician_organization}</div>
                   </td>
-                  <td className="py-3 px-4 font-mono text-slate-300">{c.measured_deviation}</td>
-                  <td className="py-3 px-4 text-slate-400">{c.standard_reference}</td>
-                  <td className="py-3 px-4 text-right font-mono font-bold text-amber-300">
+                  <td className="py-3 px-4 font-mono font-semibold text-slate-800">{c.measured_deviation}</td>
+                  <td className="py-3 px-4 text-slate-500">{c.standard_reference}</td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-amber-600">
                     {c.certificate_number}
                   </td>
                 </tr>

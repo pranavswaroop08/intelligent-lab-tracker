@@ -7,16 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        lab: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          500: '#0284c7',
-          600: '#0369a1',
-          700: '#075985',
-          800: '#0c4a6e',
-          900: '#082f49',
-          950: '#031c2e',
+        brand: {
+          dark: '#272b30',       // Top bar charcoal
+          navy: '#0b3c68',       // Stanford/PES Chemicals deep navy logo
+          cyan: '#13b5ea',       // Primary vibrant cyan navbar
+          cyanHover: '#0da1d2',
+          cyanLight: '#e0f7fe',  // Light cyan tint for badges/tabs
+          quoteBtn: '#13b5ea',
+          msdsBtn: '#00a8cc',
         },
         hazard: {
           flam: '#ef4444',

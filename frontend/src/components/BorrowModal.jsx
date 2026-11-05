@@ -48,24 +48,24 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs font-sans">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-[#0b3c68] text-white">
           <div>
-            <h3 className="font-semibold text-base text-slate-100 flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${isReturn ? 'bg-emerald-400' : 'bg-cyan-400'}`}></span>
+            <h3 className="font-bold text-base flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${isReturn ? 'bg-emerald-400' : 'bg-[#13b5ea]'}`}></span>
               {isReturn ? 'Check-in / Return Asset' : 'Check-out / Borrow Asset'}
             </h3>
-            <p className="text-xs text-slate-400">{asset.name} [{asset.asset_tag}]</p>
+            <p className="text-xs text-slate-300">{asset.name} [{asset.asset_tag}]</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -75,19 +75,19 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
           {!isReturn ? (
             <>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Borrower
                 </label>
                 <input
                   type="text"
                   value={`${currentUser.name} (${currentUser.srn_or_emp_id})`}
                   disabled
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 text-xs cursor-not-allowed"
+                  className="w-full px-3.5 py-2 rounded-md bg-slate-100 border border-slate-200 text-slate-500 text-xs cursor-not-allowed font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Purpose / Experiment *
                 </label>
                 <input
@@ -95,19 +95,19 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
                   placeholder="e.g. Optical density measurement at 600nm"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 text-sm focus:outline-none focus:border-[#13b5ea]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Estimated Usage Duration
                 </label>
                 <select
                   value={durationHours}
                   onChange={(e) => setDurationHours(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#13b5ea]"
                 >
                   <option value="1">1 Hour (Quick practical)</option>
                   <option value="2">2 Hours (Standard session)</option>
@@ -120,13 +120,13 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
           ) : (
             <>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Instrument Condition on Return *
                 </label>
                 <select
                   value={conditionReturn}
                   onChange={(e) => setConditionReturn(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#13b5ea]"
                 >
                   <option value="Clean & Operational">Clean & Fully Operational (Excellent)</option>
                   <option value="Cleaned with Lens Tissue">Optics / Sensors cleaned as per SOP</option>
@@ -136,7 +136,7 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Total Runtime Hours Used
                 </label>
                 <input
@@ -145,14 +145,14 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
                   min="0.1"
                   value={runtimeHours}
                   onChange={(e) => setRuntimeHours(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#13b5ea]"
                 />
               </div>
             </>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
               Notes (Optional)
             </label>
             <textarea
@@ -160,26 +160,26 @@ export default function BorrowModal({ asset, onClose, onSuccess }) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Cuvettes returned to rack. Balanced before spin."
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-cyan-400"
+              className="w-full px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 text-xs focus:outline-none focus:border-[#13b5ea]"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
+              className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-950 font-semibold text-xs shadow-lg transition disabled:opacity-50 ${
-                isReturn ? 'bg-emerald-400 hover:bg-emerald-300' : 'bg-cyan-400 hover:bg-cyan-300'
+              className={`px-5 py-2.5 rounded-md text-white font-bold text-xs uppercase tracking-wider shadow-md transition disabled:opacity-50 ${
+                isReturn ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-[#13b5ea] hover:bg-[#0da1d2]'
               }`}
             >
-              {loading ? 'Processing...' : isReturn ? 'Confirm Return & Check-in' : 'Confirm Check-out'}
+              {loading ? 'Processing...' : isReturn ? 'Confirm Return' : 'Confirm Check-out'}
             </button>
           </div>
         </form>

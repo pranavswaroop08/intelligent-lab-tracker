@@ -56,30 +56,30 @@ export default function AssetInventory({ onOpenAI }) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Microscope className="w-5 h-5 text-indigo-400" />
-            Laboratory Instrumentation & Assets
+          <h2 className="text-2xl font-extrabold text-[#0b3c68] flex items-center gap-2">
+            <Microscope className="w-6 h-6 text-[#13b5ea]" />
+            Pharmaceutical & Research Laboratory Equipment
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Equipment Check-in/Check-out, Runtime Tracking & Metrology Calibration Lifecycle
+          <p className="text-xs text-slate-500 mt-0.5">
+            Precision instrumentation lifecycle, check-out/return custody, and ISO/IEC 17025 metrology calibration
           </p>
         </div>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="glass-panel p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by Instrument, Tag (e.g. AST-001), Model..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-100 focus:outline-none focus:border-indigo-400"
+            className="w-full pl-10 pr-4 py-2 rounded-md bg-slate-50 border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#13b5ea] focus:bg-white"
           />
         </div>
 
@@ -87,7 +87,7 @@ export default function AssetInventory({ onOpenAI }) {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-200 focus:outline-none focus:border-indigo-400"
+            className="px-3 py-2 rounded-md bg-slate-50 border border-slate-300 text-xs text-slate-700 focus:outline-none focus:border-[#13b5ea]"
           >
             <option value="">All Instrument Types</option>
             {categories.map((c) => (
@@ -98,7 +98,7 @@ export default function AssetInventory({ onOpenAI }) {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-200 focus:outline-none focus:border-indigo-400"
+            className="px-3 py-2 rounded-md bg-slate-50 border border-slate-300 text-xs text-slate-700 focus:outline-none focus:border-[#13b5ea]"
           >
             <option value="">All Operational Statuses</option>
             <option value="available">Available</option>
@@ -110,7 +110,7 @@ export default function AssetInventory({ onOpenAI }) {
       </div>
 
       {/* Assets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {assets.map((a) => {
           const isDue = a.is_calibration_due || a.status === 'calibration_due';
           const isInUse = a.status === 'in_use';
@@ -118,72 +118,72 @@ export default function AssetInventory({ onOpenAI }) {
           return (
             <div
               key={a.id}
-              className="glass-card rounded-2xl border border-slate-800 p-5 flex flex-col justify-between hover:border-slate-700 shadow-lg group"
+              className="clean-card rounded-2xl p-6 flex flex-col justify-between group"
             >
               <div>
                 {/* Header Strip */}
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <span className="font-mono text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">
                     {a.asset_tag}
                   </span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium ${
-                    isInUse ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' :
-                    isDue ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
-                    a.status === 'under_maintenance' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                    'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                    isInUse ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
+                    isDue ? 'bg-rose-100 text-rose-700 border border-rose-300 animate-pulse' :
+                    a.status === 'under_maintenance' ? 'bg-amber-100 text-amber-800' :
+                    'bg-emerald-100 text-emerald-800'
                   }`}>
                     {isInUse ? '● In Use' : isDue ? '● Calibration Due' : a.status.replace(/_/g, ' ')}
                   </span>
                 </div>
 
-                <h3 className="font-semibold text-slate-100 text-sm leading-snug group-hover:text-cyan-300 transition">
+                <h3 className="font-bold text-[#0b3c68] text-base leading-snug group-hover:text-[#13b5ea] transition">
                   {a.name}
                 </h3>
-                <p className="text-[11px] text-slate-400 mt-1 font-mono">
+                <p className="text-xs text-slate-500 font-mono mt-1">
                   {a.manufacturer} · {a.model_number || 'Model Standard'}
                 </p>
 
                 {/* Live Checkout Status Banner if in use */}
                 {isInUse && a.current_borrow && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-[11px] text-indigo-200">
-                    <div className="font-semibold flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="mt-3 p-3 rounded-lg bg-indigo-50/80 border border-indigo-200 text-xs text-indigo-900">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-indigo-600" />
                       Active Checkout by {a.current_borrow.user_name}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                    <div className="text-[11px] text-slate-600 mt-0.5 truncate">
                       Purpose: {a.current_borrow.purpose}
                     </div>
                   </div>
                 )}
 
                 {/* Calibration details */}
-                <div className="mt-3 space-y-1 text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
-                  <div className="flex justify-between text-slate-400">
+                <div className="mt-3 space-y-1.5 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="flex justify-between text-slate-500">
                     <span>Last Calibration:</span>
-                    <span className="text-slate-300 font-mono">{a.last_calibration_date || 'N/A'}</span>
+                    <span className="text-slate-800 font-mono font-semibold">{a.last_calibration_date || 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Next Due Date:</span>
-                    <span className={`font-mono ${isDue ? 'text-rose-400 font-bold' : 'text-slate-300'}`}>
+                    <span className={`font-mono font-bold ${isDue ? 'text-rose-600' : 'text-slate-800'}`}>
                       {a.next_calibration_due || 'N/A'}
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Lab Room:</span>
-                    <span className="text-slate-300">{a.lab_name}</span>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Assigned Facility:</span>
+                    <span className="text-slate-800 font-medium">{a.lab_name}</span>
                   </div>
                 </div>
 
-                {/* Operating SOP Snippet */}
+                {/* Operating SOP */}
                 {a.operating_instructions && (
-                  <p className="text-[11px] text-slate-400 italic line-clamp-2 mt-3 leading-relaxed">
+                  <p className="text-xs text-slate-500 italic line-clamp-2 mt-3 leading-relaxed">
                     SOP: "{a.operating_instructions}"
                   </p>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+              <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                 <button
                   onClick={() => setActiveQRAsset({
                     title: a.name,
@@ -197,7 +197,7 @@ export default function AssetInventory({ onOpenAI }) {
                       calibration_due: a.next_calibration_due
                     }
                   })}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                  className="p-2 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
                   title="Generate & Print Asset QR Label"
                 >
                   <QrCode className="w-4 h-4" />
@@ -206,20 +206,20 @@ export default function AssetInventory({ onOpenAI }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActiveCalibrateAsset(a)}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-xs font-medium transition"
+                    className="px-3.5 py-1.5 rounded-md bg-white hover:bg-amber-50 text-amber-700 border border-amber-300 text-xs font-bold uppercase tracking-wider transition"
                   >
-                    Calibrate
+                    CALIBRATE
                   </button>
 
                   <button
                     onClick={() => setActiveBorrowAsset(a)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-md transition ${
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm transition ${
                       isInUse
-                        ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
-                        : 'bg-cyan-400 hover:bg-cyan-300 text-slate-950'
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        : 'bg-[#13b5ea] hover:bg-[#0da1d2] text-white'
                     }`}
                   >
-                    {isInUse ? 'Return Asset' : 'Check-out'}
+                    {isInUse ? 'RETURN ASSET' : 'CHECK-OUT'}
                   </button>
                 </div>
               </div>

@@ -45,15 +45,15 @@ export default function AuditLogs() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <History className="w-5 h-5 text-cyan-400" />
-            Immutable Regulatory Audit Log & Security Trail
+          <h2 className="text-2xl font-extrabold text-[#0b3c68] flex items-center gap-2">
+            <History className="w-6 h-6 text-[#13b5ea]" />
+            Regulatory Security Audit Trail & Activity Logs
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Tamper-evident activity logs for laboratory inspections, asset borrowing, chemical handling & hazard alerts
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function AuditLogs() {
           <select
             value={selectedAction}
             onChange={(e) => setSelectedAction(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-200"
+            className="px-3 py-2 rounded-md bg-white border border-slate-300 text-xs text-slate-700 font-medium"
           >
             <option value="">All Actions</option>
             <option value="CREATE">CREATE</option>
@@ -76,51 +76,51 @@ export default function AuditLogs() {
 
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#13b5ea] hover:bg-[#0da1d2] text-white text-xs font-bold uppercase tracking-wider transition shadow-xs"
           >
             <Download className="w-4 h-4" />
-            Export CSV
+            EXPORT CSV
           </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-400 font-mono uppercase text-[10px]">
-                <th className="py-3 px-4">Log ID</th>
-                <th className="py-3 px-4">Date & Time</th>
-                <th className="py-3 px-4">Operator / User</th>
-                <th className="py-3 px-4">Action</th>
-                <th className="py-3 px-4">Entity Type</th>
-                <th className="py-3 px-4">Activity Audit Narrative</th>
-                <th className="py-3 px-4 text-right">Terminal IP</th>
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                <th className="py-3.5 px-5">Log ID</th>
+                <th className="py-3.5 px-5">Date & Time</th>
+                <th className="py-3.5 px-5">Operator / User</th>
+                <th className="py-3.5 px-5">Action</th>
+                <th className="py-3.5 px-5">Entity Type</th>
+                <th className="py-3.5 px-5">Activity Audit Narrative</th>
+                <th className="py-3.5 px-5 text-right">Terminal IP</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-sans">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {logs.map((l) => (
-                <tr key={l.id} className="hover:bg-slate-800/40 transition">
-                  <td className="py-3 px-4 font-mono text-slate-500 text-[11px]">#{l.id}</td>
-                  <td className="py-3 px-4 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                <tr key={l.id} className="hover:bg-slate-50 transition">
+                  <td className="py-3.5 px-5 font-mono text-slate-400 font-bold">#{l.id}</td>
+                  <td className="py-3.5 px-5 text-slate-500 font-mono text-[11px] whitespace-nowrap">
                     {new Date(l.created_at).toLocaleString()}
                   </td>
-                  <td className="py-3 px-4 font-semibold text-slate-200">{l.user_name}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
-                      l.action.includes('ALERT') ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                      l.action.includes('DISPENSE') ? 'bg-amber-500/20 text-amber-400' :
-                      l.action.includes('BORROW') ? 'bg-indigo-500/20 text-indigo-400' :
-                      l.action.includes('CALIBRATE') ? 'bg-cyan-500/20 text-cyan-400' :
-                      'bg-slate-800 text-slate-300'
+                  <td className="py-3.5 px-5 font-bold text-[#0b3c68]">{l.user_name}</td>
+                  <td className="py-3.5 px-5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                      l.action.includes('ALERT') ? 'bg-rose-100 text-rose-700 border border-rose-300' :
+                      l.action.includes('DISPENSE') ? 'bg-amber-100 text-amber-700' :
+                      l.action.includes('BORROW') ? 'bg-indigo-100 text-indigo-700' :
+                      l.action.includes('CALIBRATE') ? 'bg-cyan-100 text-cyan-700' :
+                      'bg-slate-100 text-slate-700'
                     }`}>
                       {l.action}
                     </span>
                   </td>
-                  <td className="py-3 px-4 font-mono text-[11px] text-slate-400">{l.entity_type}</td>
-                  <td className="py-3 px-4 text-slate-300 max-w-md">{l.details}</td>
-                  <td className="py-3 px-4 text-right font-mono text-[11px] text-slate-500">{l.ip_address}</td>
+                  <td className="py-3.5 px-5 font-mono text-[11px] text-slate-500">{l.entity_type}</td>
+                  <td className="py-3.5 px-5 text-slate-800 max-w-md">{l.details}</td>
+                  <td className="py-3.5 px-5 text-right font-mono text-[11px] text-slate-400">{l.ip_address}</td>
                 </tr>
               ))}
             </tbody>

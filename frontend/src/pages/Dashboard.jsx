@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
+  ChevronLeft,
+  ChevronRight,
   FlaskConical,
   Microscope,
   AlertTriangle,
@@ -9,337 +11,433 @@ import {
   Droplets,
   CalendarCheck,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  QrCode,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
 import NFPA704Diamond from '../components/NFPA704Diamond';
 import GHSPictogram from '../components/GHSPictogram';
+import DispenseModal from '../components/DispenseModal';
+import QRModal from '../components/QRModal';
+import heroImg from '../assets/chemical_hero.jpg';
 
-export default function Dashboard({ setActiveTab, onOpenAI, onSelectQR }) {
+const HERO_SLIDES = [
+  {
+    title: "Pure Hyaluronic Acid Powder",
+    highlight: "Pharmaceutical & Research Grade Reagents",
+    description: "Stanford Chemicals Company / PES University Laboratory Division, a premier chemical and research reagent tracking platform, offers high, medium, low molecular weight, and oligomeric hyaluronic acid powder, suitable for analytical chemistry, joint injection, drug carriers, and academic laboratory inventory.",
+    primaryBtn: "Our Products",
+    secondaryBtn: "Catalog"
+  },
+  {
+    title: "Intelligent Laboratory Asset & Chemical Tracker",
+    highlight: "OSHA & GHS Co-Location Safety Engine",
+    description: "Automated real-time segregation matrix preventing dangerous chemical co-locations (oxidizers + flammables detonation prevention), volumetric dispensation tracking, and ISO/IEC 17025 equipment calibration.",
+    primaryBtn: "Explore Safety Engine",
+    secondaryBtn: "View Cabinets"
+  }
+];
+
+const SUB_TABS = [
+  { id: 'sodium_hyaluronate', label: 'Sodium Hyaluronate' },
+  { id: 'dihydromyricetin', label: 'Dihydromyricetin' },
+  { id: 'chondroitin_sulfate', label: 'Chondroitin Sulfate' },
+  { id: 'ferulic_acid', label: 'Ferulic Acid' }
+];
+
+export default function Dashboard({ setActiveTab, onOpenAI }) {
   const [data, setData] = useState(null);
+  const [chemicals, setChemicals] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeSubTab, setActiveSubTab] = useState('sodium_hyaluronate');
+  const [activeDispenseBatch, setActiveDispenseBatch] = useState(null);
+  const [activeQRItem, setActiveQRItem] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboard();
+    loadAllData();
   }, []);
 
-  const loadDashboard = () => {
+  const loadAllData = () => {
     setLoading(true);
-    api.getDashboard()
-      .then((res) => setData(res))
+    Promise.all([
+      api.getDashboard(),
+      api.getChemicals(),
+      api.getAssets()
+    ])
+      .then(([dashRes, chemRes, assetRes]) => {
+        setData(dashRes);
+        setChemicals(chemRes);
+        setAssets(assetRes);
+      })
       .catch((err) => console.error('Failed to load dashboard:', err))
       .finally(() => setLoading(false));
   };
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-xs text-slate-400 font-mono">Aggregating laboratory telemetry & safety metrics...</p>
+          <div className="w-10 h-10 border-4 border-[#13b5ea] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xs text-slate-500 font-mono">Loading laboratory chemicals & telemetry...</p>
         </div>
       </div>
     );
   }
 
   if (!data) return null;
-
   const { summary, hazard_distribution, recent_dispensations, recent_audits } = data;
+  const slide = HERO_SLIDES[currentSlide];
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner with Compliance Score */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-6 shadow-xl">
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-cyan-500/5 blur-3xl pointer-events-none"></div>
+    <div className="space-y-8 pb-12 font-sans">
+      {/* =========================================================================
+          HERO BANNER (Exact Match to Stanford Chemicals Website Template)
+          ========================================================================= */}
+      <div className="relative w-full rounded-[32px] overflow-hidden shadow-xl border border-slate-200 bg-slate-900 min-h-[380px] sm:min-h-[420px] flex flex-col justify-between">
+        {/* Background Image: Molecular Droplets / Bubbles */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-all duration-700"
+          style={{ backgroundImage: `url(${heroImg})` }}
+        >
+          {/* Subtle gradient overlay to guarantee text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-900/40 to-transparent"></div>
+        </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-              Live Laboratory Telemetry Active
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-tight">
-              Chemical & Asset Intelligence Center
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-              Real-time monitoring of chemical hazards, GHS regulatory compliance, volumetric consumption, and instrument calibration across PES University research facilities.
-            </p>
+        {/* Carousel Navigation Arrows */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition shadow-lg z-20"
+          title="Previous Banner"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md flex items-center justify-center transition shadow-lg z-20"
+          title="Next Banner"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        {/* Hero Content Container */}
+        <div className="relative z-10 p-8 sm:p-14 max-w-2xl text-white space-y-4">
+          <div className="inline-block px-3 py-1 rounded-full bg-[#13b5ea]/30 text-cyan-200 text-xs font-semibold backdrop-blur-md border border-[#13b5ea]/40">
+            {slide.highlight}
           </div>
 
-          {/* Compliance Score Gauge Card */}
-          <div className="bg-slate-950/80 border border-slate-800 p-4 rounded-xl flex items-center gap-5 shrink-0">
-            <div className="relative w-16 h-16 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-slate-800"
-                  strokeWidth="3.5"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className={summary.compliance_score >= 80 ? 'text-emerald-400' : 'text-amber-400'}
-                  strokeDasharray={`${summary.compliance_score}, 100`}
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute text-center">
-                <span className="text-base font-bold text-slate-100 font-mono leading-none">
-                  {summary.compliance_score}%
-                </span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
+            {slide.title}
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-100/90 leading-relaxed max-w-xl font-normal drop-shadow-sm">
+            {slide.description}
+          </p>
+
+          {/* Action Buttons inside Hero */}
+          <div className="flex flex-wrap items-center gap-4 pt-2">
+            <button
+              onClick={() => setActiveTab('chemicals')}
+              className="px-6 py-2.5 rounded-md bg-[#13b5ea] hover:bg-[#0da1d2] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/25 transition transform active:scale-95"
+            >
+              {slide.primaryBtn}
+            </button>
+            <button
+              onClick={() => setActiveTab('assets')}
+              className="px-6 py-2.5 rounded-md bg-white/25 hover:bg-white/35 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md border border-white/40 transition"
+            >
+              {slide.secondaryBtn}
+            </button>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            HORIZONTAL SUB-TABS (Embedded seamlessly on bottom border of Hero)
+            ========================================================================= */}
+        <div className="relative z-10 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-between px-4 sm:px-8 py-0 overflow-x-auto scrollbar-none shadow-sm">
+          <div className="flex items-center text-xs font-semibold whitespace-nowrap">
+            {SUB_TABS.map((tab) => {
+              const isActive = activeSubTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSubTab(tab.id)}
+                  className={`py-3.5 px-4 sm:px-6 transition border-b-2 text-xs font-medium ${
+                    isActive
+                      ? 'border-[#13b5ea] text-[#13b5ea] font-bold bg-[#13b5ea]/5'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setActiveTab('chemicals')}
+            className="text-xs font-bold text-[#13b5ea] hover:underline flex items-center gap-1 shrink-0 py-3 px-3"
+          >
+            View All &gt;&gt;
+          </button>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          SECTION TITLE: Bulk Chemical Catalog & High-Precision Laboratory Inventory
+          ========================================================================= */}
+      <div className="text-center pt-2">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
+          Bulk Pure Hyaluronic Acid & Research Chemical Catalog
+        </h2>
+        <p className="text-xs text-slate-500 mt-1 max-w-xl mx-auto">
+          Pharmaceutical & analytical research purity reagents certified for PES University academic laboratories and research centers.
+        </p>
+      </div>
+
+      {/* =========================================================================
+          GRID OF CHEMICAL PRODUCTS (Clean Stanford Chemicals Card Layout)
+          ========================================================================= */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {chemicals.slice(0, 8).map((c) => (
+          <div
+            key={c.id}
+            className="clean-card rounded-2xl overflow-hidden flex flex-col justify-between group"
+          >
+            {/* Chemical Header Badge */}
+            <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+              <span className="font-mono text-[10px] text-slate-500 font-bold bg-white px-2 py-0.5 rounded border border-slate-200">
+                CAS {c.cas_number}
+              </span>
+              <span className="text-[10px] font-bold text-[#13b5ea] uppercase">
+                {c.physical_state}
+              </span>
+            </div>
+
+            {/* Product Body */}
+            <div className="p-5 flex-1 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-bold text-sm text-[#0b3c68] group-hover:text-[#13b5ea] transition leading-snug">
+                  {c.name}
+                </h3>
+              </div>
+
+              <div className="text-xs text-slate-500 font-mono">
+                Formula: <span className="text-slate-700 font-semibold">{c.formula || 'C3H6O'}</span> · MW: {c.molecular_weight || '58.08'}
+              </div>
+
+              {/* NFPA 704 and GHS Icons */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  {c.ghs_pictograms && c.ghs_pictograms.length > 0 ? (
+                    c.ghs_pictograms.slice(0, 2).map((p, i) => (
+                      <GHSPictogram key={i} type={p} size="sm" />
+                    ))
+                  ) : (
+                    <GHSPictogram type="flame" size="sm" />
+                  )}
+                  <span className="text-[11px] text-slate-600 font-medium truncate max-w-[100px]">
+                    {c.hazard_class_name}
+                  </span>
+                </div>
+
+                <div className="scale-75 origin-right">
+                  <NFPA704Diamond
+                    health={c.nfpa.health}
+                    flammability={c.nfpa.flammability}
+                    instability={c.nfpa.instability}
+                    special={c.nfpa.special}
+                    size={38}
+                  />
+                </div>
+              </div>
+
+              {/* Stock Gauge */}
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs">
+                <div className="flex justify-between items-center text-[11px] text-slate-500 mb-1">
+                  <span>Available Inventory</span>
+                  <span className="font-mono font-bold text-[#0b3c68]">
+                    {c.total_stock} {c.unit}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      c.is_low_stock ? 'bg-amber-400' : 'bg-[#13b5ea]'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.max(15, (c.total_stock / (c.min_threshold_qty * 2)) * 100))}%`
+                    }}
+                  ></div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">OSHA/GHS Readiness</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Grade {summary.compliance_grade}
-                </span>
-              </div>
-              <div className="text-xs text-slate-300 font-medium mt-0.5">
-                {summary.compliance_score >= 85 ? 'Audit Inspection Ready' : 'Attention Items Flagged'}
-              </div>
+            {/* Product Card Actions */}
+            <div className="p-4 bg-slate-50/50 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
               <button
-                onClick={() => setActiveTab('compatibility')}
-                className="text-[11px] text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1 mt-1"
+                onClick={() => {
+                  api.getBatches(`chemical_id=${c.id}`).then((bList) => {
+                    if (bList.length > 0) setActiveDispenseBatch(bList[0]);
+                    else alert('No active bottles currently in stock.');
+                  });
+                }}
+                className="w-full py-1.5 rounded-md bg-[#13b5ea] hover:bg-[#0da1d2] text-white font-bold text-center transition shadow-xs text-[11px] uppercase tracking-wider"
               >
-                Inspect facility audits <ArrowRight className="w-3 h-3" />
+                DISPENSE
+              </button>
+
+              <button
+                onClick={onOpenAI}
+                className="w-full py-1.5 rounded-md bg-white hover:bg-slate-100 text-[#00a8cc] border border-[#00a8cc] font-bold text-center transition text-[11px] uppercase tracking-wider"
+              >
+                VIEW SDS
               </button>
             </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Primary Stat Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Chemical Reagents */}
+      {/* =========================================================================
+          FACILITY TELEMETRY & OSHA/GHS COMPLIANCE METRIC STRIP
+          ========================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Total Reagents */}
         <div
           onClick={() => setActiveTab('chemicals')}
-          className="cursor-pointer glass-card p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/40 transition group"
+          className="cursor-pointer clean-card p-5 rounded-2xl flex items-center justify-between"
         >
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Chemical Master Catalog</span>
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition">
-              <FlaskConical className="w-4 h-4" />
-            </div>
+          <div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Compounds</div>
+            <div className="text-2xl font-black text-[#0b3c68] font-mono mt-1">{summary.total_chemicals}</div>
+            <div className="text-[11px] text-[#13b5ea] mt-0.5 font-medium">{summary.total_batches} Active Containers</div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100 font-mono">{summary.total_chemicals}</span>
-            <span className="text-xs text-slate-400">Compounds</span>
-          </div>
-          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
-            <span>{summary.total_batches} Active Containers</span>
-            <span className="text-cyan-400 flex items-center gap-0.5">
-              View <ArrowRight className="w-3 h-3" />
-            </span>
+          <div className="p-3 rounded-xl bg-cyan-50 text-[#13b5ea]">
+            <FlaskConical className="w-6 h-6" />
           </div>
         </div>
 
-        {/* Low Stock Alerts */}
+        {/* Compliance Grade */}
         <div
-          onClick={() => setActiveTab('chemicals')}
-          className="cursor-pointer glass-card p-5 rounded-2xl border border-slate-800 hover:border-amber-500/40 transition group"
+          onClick={() => setActiveTab('compatibility')}
+          className="cursor-pointer clean-card p-5 rounded-2xl flex items-center justify-between"
         >
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Low Stock Reagents</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 group-hover:scale-110 transition">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
+          <div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">OSHA / GHS Readiness</div>
+            <div className="text-2xl font-black text-emerald-600 font-mono mt-1">{summary.compliance_score}%</div>
+            <div className="text-[11px] text-emerald-600 mt-0.5 font-medium">Grade {summary.compliance_grade} (Audit Ready)</div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-amber-400 font-mono">{summary.low_stock_count}</span>
-            <span className="text-xs text-slate-400">Below Reorder Level</span>
-          </div>
-          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
-            <span>{summary.expiring_batches_count} Expiring in 30 Days</span>
-            <span className="text-amber-400 flex items-center gap-0.5">
-              Review <ArrowRight className="w-3 h-3" />
-            </span>
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+            <ShieldCheck className="w-6 h-6" />
           </div>
         </div>
 
-        {/* Laboratory Equipment */}
+        {/* Instruments In Use */}
         <div
           onClick={() => setActiveTab('assets')}
-          className="cursor-pointer glass-card p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition group"
+          className="cursor-pointer clean-card p-5 rounded-2xl flex items-center justify-between"
         >
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Laboratory Assets</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition">
-              <Microscope className="w-4 h-4" />
-            </div>
+          <div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Lab Instruments</div>
+            <div className="text-2xl font-black text-[#0b3c68] font-mono mt-1">{summary.total_assets}</div>
+            <div className="text-[11px] text-indigo-600 mt-0.5 font-medium">{summary.active_borrows_count} Instruments in Use</div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100 font-mono">{summary.total_assets}</span>
-            <span className="text-xs text-slate-400">Instruments</span>
-          </div>
-          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
-            <span className="text-emerald-400">{summary.active_borrows_count} Currently In Use</span>
-            <span className="text-indigo-400 flex items-center gap-0.5">
-              Track <ArrowRight className="w-3 h-3" />
-            </span>
+          <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600">
+            <Microscope className="w-6 h-6" />
           </div>
         </div>
 
-        {/* Calibrations Due */}
+        {/* Calibration Attention */}
         <div
           onClick={() => setActiveTab('maintenance')}
-          className="cursor-pointer glass-card p-5 rounded-2xl border border-slate-800 hover:border-rose-500/40 transition group"
+          className="cursor-pointer clean-card p-5 rounded-2xl flex items-center justify-between"
         >
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Calibration Due</span>
-            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 group-hover:scale-110 transition">
-              <CalendarCheck className="w-4 h-4" />
-            </div>
+          <div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Calibration Due</div>
+            <div className="text-2xl font-black text-amber-500 font-mono mt-1">{summary.calibration_due_count}</div>
+            <div className="text-[11px] text-amber-600 mt-0.5 font-medium">ISO/IEC 17025 Traceable</div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-rose-400 font-mono">{summary.calibration_due_count}</span>
-            <span className="text-xs text-slate-400">Require Recalibration</span>
-          </div>
-          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
-            <span>ISO/IEC 17025 Compliance</span>
-            <span className="text-rose-400 flex items-center gap-0.5">
-              Schedule <ArrowRight className="w-3 h-3" />
-            </span>
+          <div className="p-3 rounded-xl bg-amber-50 text-amber-500">
+            <CalendarCheck className="w-6 h-6" />
           </div>
         </div>
       </div>
 
-      {/* Two Column Grid: Hazard Breakdown & Recent Dispensations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Hazard Class Regulatory Segregation */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              <h3 className="font-semibold text-slate-200 text-sm">GHS Regulatory Storage Segregation</h3>
-            </div>
-            <button
-              onClick={() => setActiveTab('compatibility')}
-              className="text-xs text-cyan-400 hover:underline"
-            >
-              Matrix View
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {hazard_distribution.map((h, i) => (
-              <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/70">
-                <div className="flex items-center gap-3">
-                  <GHSPictogram type={h.code.toLowerCase().includes('flam') ? 'flame' : h.code.toLowerCase().includes('acid') ? 'corrosive' : 'skull_crossbones'} size="sm" />
-                  <div>
-                    <div className="text-xs font-semibold text-slate-200">{h.name}</div>
-                    <div className="text-[10px] text-slate-500 font-mono">Category Code: {h.code}</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-cyan-300">
-                    {h.count} Chemicals
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Volumetric Chemical Dispensations */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <Droplets className="w-4 h-4 text-cyan-400" />
-              <h3 className="font-semibold text-slate-200 text-sm">Recent Dispensations & Consumptions</h3>
-            </div>
-            <button
-              onClick={() => setActiveTab('dispensations')}
-              className="text-xs text-cyan-400 hover:underline"
-            >
-              All Records
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {recent_dispensations.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-500">No dispensations logged yet.</div>
-            ) : (
-              recent_dispensations.map((d) => (
-                <div key={d.id} className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70 text-xs flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-slate-200">{d.chemical_name}</div>
-                    <div className="text-[11px] text-slate-400">
-                      {d.experiment_name} · <span className="text-cyan-400">{d.user_name}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-rose-400 text-xs">
-                      -{d.dispensed_amount} {d.unit}
-                    </span>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      Bal: {d.remaining_quantity_after} {d.unit}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Security & Activity Audit Log Teaser */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <h3 className="font-semibold text-slate-200 text-sm">Recent Platform Activity & Audit Trail</h3>
+      {/* =========================================================================
+          RECENT CONSUMPTIONS & AUDIT LOGS TABLE
+          ========================================================================= */}
+      <div className="clean-card rounded-2xl p-6 overflow-hidden">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div>
+            <h3 className="font-extrabold text-sm text-[#0b3c68] uppercase tracking-wider">
+              Recent Chemical Dispensations & Custody Logs
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">Real-time database transaction log for academic practicals</p>
           </div>
           <button
-            onClick={() => setActiveTab('audit')}
-            className="text-xs text-cyan-400 hover:underline"
+            onClick={() => setActiveTab('dispensations')}
+            className="text-xs font-bold text-[#13b5ea] hover:underline"
           >
-            Full Security Log
+            View All Logs &gt;&gt;
           </button>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-mono uppercase text-[10px]">
+              <tr className="border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px]">
                 <th className="pb-2">Timestamp</th>
-                <th className="pb-2">Operator</th>
-                <th className="pb-2">Action</th>
-                <th className="pb-2">Entity</th>
-                <th className="pb-2">Details</th>
+                <th className="pb-2">Chemical Compound</th>
+                <th className="pb-2">Experiment Protocol</th>
+                <th className="pb-2">Researcher / Student</th>
+                <th className="pb-2 text-right">Dispensed Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-sans">
-              {recent_audits.map((a) => (
-                <tr key={a.id} className="hover:bg-slate-950/30 transition">
-                  <td className="py-2.5 text-slate-400 font-mono text-[11px] whitespace-nowrap">
-                    {new Date(a.created_at).toLocaleString()}
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {recent_dispensations.map((d) => (
+                <tr key={d.id} className="hover:bg-slate-50 transition">
+                  <td className="py-2.5 font-mono text-slate-400 text-[11px]">
+                    {new Date(d.dispensed_at).toLocaleDateString()}
                   </td>
-                  <td className="py-2.5 font-medium text-slate-200">{a.user_name}</td>
-                  <td className="py-2.5">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
-                      a.action.includes('ALERT') ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                      a.action.includes('DISPENSE') ? 'bg-amber-500/20 text-amber-400' :
-                      a.action.includes('BORROW') ? 'bg-indigo-500/20 text-indigo-400' :
-                      'bg-slate-800 text-slate-300'
-                    }`}>
-                      {a.action}
-                    </span>
+                  <td className="py-2.5 font-bold text-[#0b3c68]">{d.chemical_name}</td>
+                  <td className="py-2.5 text-slate-500">{d.experiment_name}</td>
+                  <td className="py-2.5 font-medium">{d.user_name}</td>
+                  <td className="py-2.5 text-right font-mono font-bold text-rose-500">
+                    -{d.dispensed_amount} {d.unit}
                   </td>
-                  <td className="py-2.5 text-slate-400 font-mono text-[11px]">{a.entity_type}</td>
-                  <td className="py-2.5 text-slate-300 max-w-xs truncate">{a.details}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Active Modals */}
+      {activeDispenseBatch && (
+        <DispenseModal
+          batch={activeDispenseBatch}
+          onClose={() => setActiveDispenseBatch(null)}
+          onSuccess={() => loadAllData()}
+        />
+      )}
+
+      {activeQRItem && (
+        <QRModal
+          title={activeQRItem.title}
+          subtitle={activeQRItem.subtitle}
+          token={activeQRItem.token}
+          details={activeQRItem.details}
+          onClose={() => setActiveQRItem(null)}
+        />
+      )}
     </div>
   );
 }
