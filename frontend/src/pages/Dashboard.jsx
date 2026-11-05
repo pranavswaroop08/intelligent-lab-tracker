@@ -32,7 +32,7 @@ const HERO_SLIDES = [
   {
     title: "Pure Hyaluronic Acid Powder",
     highlight: "Pharmaceutical & Research Grade Reagents",
-    description: "Stanford Chemicals Company / PES University Laboratory Division, a premier chemical and research reagent tracking platform, offers high, medium, low molecular weight, and oligomeric hyaluronic acid powder, suitable for analytical chemistry, joint injection, drug carriers, and academic laboratory inventory.",
+    description: "PES University Laboratory Division / Chemical Inventory Platform offers high, medium, low molecular weight, and oligomeric hyaluronic acid powder, suitable for analytical chemistry, drug carriers, and academic laboratory research inventory.",
     primaryBtn: "Our Products",
     secondaryBtn: "Catalog"
   },
@@ -156,7 +156,7 @@ export default function Dashboard({ setActiveTab, onOpenAI }) {
       </div>
 
       {/* =========================================================================
-          HERO BANNER (Exact Match to Stanford Chemicals Website Template)
+          HERO BANNER
           ========================================================================= */}
       <div className="relative w-full rounded-[32px] overflow-hidden shadow-xl border border-slate-200 bg-slate-900 min-h-[380px] sm:min-h-[420px] flex flex-col justify-between">
         {/* Background Image: Molecular Droplets / Bubbles */}
@@ -261,7 +261,7 @@ export default function Dashboard({ setActiveTab, onOpenAI }) {
       </div>
 
       {/* =========================================================================
-          GRID OF CHEMICAL PRODUCTS (Clean Stanford Chemicals Card Layout)
+          GRID OF CHEMICAL PRODUCTS (Clean Card Layout)
           ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {chemicals.slice(0, 8).map((c) => (

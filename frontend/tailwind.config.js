@@ -9,7 +9,7 @@ export default {
       colors: {
         brand: {
           dark: '#272b30',       // Top bar charcoal
-          navy: '#0b3c68',       // Stanford/PES Chemicals deep navy logo
+          navy: '#0b3c68',       // PES Chemicals deep navy logo
           cyan: '#13b5ea',       // Primary vibrant cyan navbar
           cyanHover: '#0da1d2',
           cyanLight: '#e0f7fe',  // Light cyan tint for badges/tabs

@@ -107,10 +107,10 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI, onOpenDispen
 
             <span className="hidden sm:inline-block text-slate-600">|</span>
             <a
-              href="mailto:sales@stanfordchem.com"
+              href="mailto:chemicals@pes.edu"
               className="hidden sm:inline-block hover:text-white transition font-mono text-slate-400"
             >
-              sales@stanfordchem.com
+              chemicals@pes.edu
             </a>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI, onOpenDispen
             TIER 2: White Main Branding Row (Logo + Search + Action Buttons)
             ========================================================================= */}
         <div className="bg-white py-3.5 px-4 sm:px-8 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Logo: Stanford Chemicals Style */}
+          {/* Logo: PES Chemicals Style */}
           <div
             onClick={() => setActiveTab('dashboard')}
             className="cursor-pointer flex items-center gap-3 shrink-0"
@@ -148,8 +148,8 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI, onOpenDispen
             </div>
 
             <div className="leading-tight">
-              <div className="text-[#0b3c68] font-extrabold text-xl tracking-tight font-sans">
-                STANFORD
+              <div className="text-[#0b3c68] font-extrabold text-2xl tracking-tight font-sans">
+                PES
               </div>
               <div className="text-[#0b3c68] font-bold text-xs tracking-[0.25em] font-sans -mt-0.5">
                 CHEMICALS

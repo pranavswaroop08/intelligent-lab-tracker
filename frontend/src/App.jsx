@@ -25,7 +25,7 @@ export default function App() {
   return (
     <AuthProvider>
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans selection:bg-[#13b5ea] selection:text-white">
-        {/* Full-width 3-Tier Header matching Stanford Chemicals Template */}
+        {/* Full-width 3-Tier Header */}
         <Navbar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -84,7 +84,7 @@ export default function App() {
         <footer className="bg-[#272b30] text-slate-400 text-xs py-8 border-t border-slate-700/60 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="font-bold text-white tracking-wider">STANFORD CHEMICALS</span>
+              <span className="font-bold text-white tracking-wider">PES CHEMICALS</span>
               <span className="text-slate-600">|</span>
               <span className="text-slate-300">PES University Laboratory Division</span>
             </div>

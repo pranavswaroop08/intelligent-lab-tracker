@@ -16,7 +16,7 @@ export default function AIAssistantModal({ chemicalContext, assetContext, onClos
     {
       role: 'assistant',
       source: 'Google Gemini 2.5 Flash Safety Engine',
-      text: "👋 Welcome to the **Stanford / PES Chemicals Laboratory Safety & MSDS Advisor**.\n\nAsk any question regarding chemical compatibility, NFPA 704 ratings, GHS safety data sheets (MSDS), emergency spill neutralization, or equipment calibration standards."
+      text: "👋 Welcome to the **PES Chemicals Laboratory Safety & MSDS Advisor**.\n\nAsk any question regarding chemical compatibility, NFPA 704 ratings, GHS safety data sheets (MSDS), emergency spill neutralization, or equipment calibration standards."
     }
   ]);
   const [loading, setLoading] = useState(false);
