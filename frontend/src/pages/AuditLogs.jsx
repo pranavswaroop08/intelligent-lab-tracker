@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { History, ShieldCheck, Filter, Download } from 'lucide-react';
+import { History, ShieldCheck, Filter, Download, Shield, Wrench, Lock } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function AuditLogs() {
+  const { currentUser, isAdmin, isLabManager, switchToSwaroop, switchToKaushal } = useAuth();
   const [logs, setLogs] = useState([]);
   const [selectedAction, setSelectedAction] = useState('');
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,56 @@ export default function AuditLogs() {
 
   return (
     <div className="space-y-6 font-sans">
+      {/* RBAC Role Clearance Strip */}
+      <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+        isAdmin
+          ? 'bg-rose-50 border-rose-200 text-rose-900'
+          : isLabManager
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+          : 'bg-amber-50 border-amber-200 text-amber-900'
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg text-white ${
+            isAdmin ? 'bg-rose-600' : isLabManager ? 'bg-emerald-600' : 'bg-amber-600'
+          }`}>
+            {isAdmin ? <Shield className="w-5 h-5" /> : isLabManager ? <Wrench className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+          </div>
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2">
+              <span>{currentUser.name} ({currentUser.srn_or_emp_id})</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white border border-current">
+                {currentUser.role_name}
+              </span>
+            </div>
+            <div className="text-xs text-slate-600 mt-0.5">
+              {isAdmin
+                ? 'Full Regulatory Clearance (Pranav Swaroop S): Authorized to inspect complete immutable audit records and export CSV logs.'
+                : isLabManager
+                ? 'Operational Clearance (Pranav Kaushal J): Authorized to view chemical and equipment tracking audit records.'
+                : 'Restricted Student Clearance: Viewing anonymized public audit summary.'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin ? (
+            <button
+              onClick={switchToKaushal}
+              className="px-3 py-1.5 rounded-md bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
+            >
+              Switch to Kaushal (Lab Mgr)
+            </button>
+          ) : (
+            <button
+              onClick={switchToSwaroop}
+              className="px-3 py-1.5 rounded-md bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+            >
+              Switch to Swaroop (Admin)
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>

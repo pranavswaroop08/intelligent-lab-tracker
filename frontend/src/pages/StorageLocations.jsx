@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Thermometer, Layers, ShieldCheck, AlertTriangle, ChevronRight, Check } from 'lucide-react';
+import { Box, Thermometer, Layers, ShieldCheck, AlertTriangle, ChevronRight, Check, Shield, Wrench } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import ShelfVisualizer from '../components/ShelfVisualizer';
 
 export default function StorageLocations() {
+  const { currentUser, isAdmin, isLabManager, switchToSwaroop, switchToKaushal } = useAuth();
   const [locations, setLocations] = useState([]);
   const [selectedLocId, setSelectedLocId] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,50 @@ export default function StorageLocations() {
 
   return (
     <div className="space-y-6 font-sans">
+      {/* RBAC Storage Topology Clearance Strip */}
+      <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+        isAdmin
+          ? 'bg-rose-50 border-rose-200 text-rose-900'
+          : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg text-white ${isAdmin ? 'bg-rose-600' : 'bg-emerald-600'}`}>
+            {isAdmin ? <Shield className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+          </div>
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2">
+              <span>{currentUser.name} ({currentUser.srn_or_emp_id})</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white border border-current">
+                {currentUser.role_name}
+              </span>
+            </div>
+            <div className="text-xs text-slate-600 mt-0.5">
+              {isAdmin
+                ? 'Storage Topology Architect (Pranav Swaroop S): Can create new fire cabinets, set room temperature setpoints, and configure shelf tier counts.'
+                : 'Physical Inspection Lead (Pranav Kaushal J): Can conduct shelf inventory audits and flag spill sumps for maintenance.'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin ? (
+            <button
+              onClick={switchToKaushal}
+              className="px-3 py-1.5 rounded-md bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
+            >
+              Switch to Kaushal (Lab Mgr)
+            </button>
+          ) : (
+            <button
+              onClick={switchToSwaroop}
+              className="px-3 py-1.5 rounded-md bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+            >
+              Switch to Swaroop (Admin)
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="border-b border-slate-200 pb-4">
         <h2 className="text-2xl font-extrabold text-[#0b3c68] flex items-center gap-2">

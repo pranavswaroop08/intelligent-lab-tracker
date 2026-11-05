@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function CalibrateModal({ asset, onClose, onSuccess }) {
   const { currentUser } = useAuth();
-  const [technicianName, setTechnicianName] = useState('Pranav Kaushal J');
+  const [technicianName, setTechnicianName] = useState(currentUser?.name || 'Pranav Kaushal J');
   const [organization, setOrganization] = useState('PES University Metrology Lab');
   const [calibrationStatus, setCalibrationStatus] = useState('passed');
   const [measuredDeviation, setMeasuredDeviation] = useState('+0.02 units (Within tolerance)');

@@ -14,11 +14,13 @@ import {
   CalendarCheck
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import BorrowModal from '../components/BorrowModal';
 import CalibrateModal from '../components/CalibrateModal';
 import QRModal from '../components/QRModal';
 
 export default function AssetInventory({ onOpenAI }) {
+  const { currentUser, isLabManager, isAdmin, canCalibrate, switchToKaushal, switchToSwaroop } = useAuth();
   const [assets, setAssets] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -57,6 +59,56 @@ export default function AssetInventory({ onOpenAI }) {
 
   return (
     <div className="space-y-6 font-sans">
+      {/* RBAC Metrology Clearance Strip */}
+      <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+        isLabManager
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+          : isAdmin
+          ? 'bg-rose-50 border-rose-200 text-rose-900'
+          : 'bg-slate-50 border-slate-200 text-slate-800'
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg text-white ${
+            isLabManager ? 'bg-emerald-600' : isAdmin ? 'bg-rose-600' : 'bg-slate-600'
+          }`}>
+            <Wrench className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-extrabold text-sm flex items-center gap-2">
+              <span>{currentUser.name} ({currentUser.srn_or_emp_id})</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white border border-current">
+                {currentUser.role_name}
+              </span>
+            </div>
+            <div className="text-xs text-slate-600 mt-0.5">
+              {isLabManager
+                ? 'Primary Metrology In-Charge (Pranav Kaushal J): Full certification authority to perform span calibrations and issue ISO/IEC 17025 reports.'
+                : isAdmin
+                ? 'System Administrator (Pranav Swaroop S): Super-user access to asset lifecycles, purchase records, and calibration intervals.'
+                : 'Student Session: Can view operating instructions and submit instrument borrow requests.'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isLabManager ? (
+            <button
+              onClick={switchToSwaroop}
+              className="px-3 py-1.5 rounded-md bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+            >
+              Switch to Swaroop (Admin)
+            </button>
+          ) : (
+            <button
+              onClick={switchToKaushal}
+              className="px-3 py-1.5 rounded-md bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
+            >
+              Switch to Kaushal (Lab Mgr)
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
@@ -205,8 +257,19 @@ export default function AssetInventory({ onOpenAI }) {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setActiveCalibrateAsset(a)}
-                    className="px-3.5 py-1.5 rounded-md bg-white hover:bg-amber-50 text-amber-700 border border-amber-300 text-xs font-bold uppercase tracking-wider transition"
+                    onClick={() => {
+                      if (!canCalibrate) {
+                        alert('Calibration Restricted: Only Lab Manager (Pranav Kaushal J) or System Administrator (Pranav Swaroop S) can log ISO/IEC 17025 calibrations.');
+                        return;
+                      }
+                      setActiveCalibrateAsset(a);
+                    }}
+                    title={canCalibrate ? 'Log ISO/IEC 17025 Calibration' : 'Requires Lab Manager or Admin clearance'}
+                    className={`px-3.5 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition ${
+                      canCalibrate
+                        ? 'bg-white hover:bg-amber-50 text-amber-700 border border-amber-300'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                    }`}
                   >
                     CALIBRATE
                   </button>

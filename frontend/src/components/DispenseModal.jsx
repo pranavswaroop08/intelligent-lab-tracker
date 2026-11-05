@@ -8,7 +8,9 @@ export default function DispenseModal({ batch, onClose, onSuccess }) {
   const [dispensedAmount, setDispensedAmount] = useState('');
   const [experimentName, setExperimentName] = useState('');
   const [courseOrProject, setCourseOrProject] = useState('DBMS Mini-Project Lab');
-  const [witnessName, setWitnessName] = useState('Pranav Kaushal J');
+  const [witnessName, setWitnessName] = useState(
+    currentUser?.id === 2 ? 'Pranav Swaroop S' : 'Pranav Kaushal J'
+  );
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -15,9 +15,13 @@ import {
   FileText,
   QrCode,
   Layers,
-  Sparkles
+  Sparkles,
+  Shield,
+  Wrench,
+  HelpCircle
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import NFPA704Diamond from '../components/NFPA704Diamond';
 import GHSPictogram from '../components/GHSPictogram';
 import DispenseModal from '../components/DispenseModal';
@@ -49,6 +53,7 @@ const SUB_TABS = [
 ];
 
 export default function Dashboard({ setActiveTab, onOpenAI }) {
+  const { currentUser, switchToSwaroop, switchToKaushal, isAdmin, isLabManager } = useAuth();
   const [data, setData] = useState(null);
   const [chemicals, setChemicals] = useState([]);
   const [assets, setAssets] = useState([]);
@@ -97,7 +102,59 @@ export default function Dashboard({ setActiveTab, onOpenAI }) {
   const slide = HERO_SLIDES[currentSlide];
 
   return (
-    <div className="space-y-8 pb-12 font-sans">
+    <div className="space-y-6 pb-12 font-sans">
+      {/* =========================================================================
+          RBAC ACTIVE CLEARANCE & ROLE BANNER
+          ========================================================================= */}
+      <div className={`p-4 rounded-2xl border transition-all shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 ${
+        isAdmin
+          ? 'bg-rose-50/70 border-rose-200 text-slate-800'
+          : 'bg-emerald-50/70 border-emerald-200 text-slate-800'
+      }`}>
+        <div className="flex items-center gap-3.5">
+          <div className={`p-2.5 rounded-xl text-white shadow-xs ${isAdmin ? 'bg-rose-600' : 'bg-emerald-600'}`}>
+            {isAdmin ? <Shield className="w-5 h-5" /> : <Wrench className="w-5 h-5" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold text-[#0b3c68] text-sm">{currentUser.name}</span>
+              <span className="text-slate-500 font-mono text-xs">({currentUser.srn_or_emp_id})</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                isAdmin ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+              }`}>
+                {currentUser.role_name}
+              </span>
+              <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">· {currentUser.clearance_level}</span>
+            </div>
+            <p className="text-xs text-slate-600 mt-0.5">
+              {isAdmin
+                ? 'Full administrative control over all 14 relational tables, schema triggers, storage topology, and regulatory audit trail.'
+                : 'Operational authority over ISO/IEC 17025 metrology calibrations, chemical lot intake, dispensation witnessing, and KSPCB waste manifests.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+          {isAdmin ? (
+            <button
+              onClick={switchToKaushal}
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-xs"
+            >
+              <Wrench className="w-3.5 h-3.5" />
+              Switch to Kaushal (Lab Mgr)
+            </button>
+          ) : (
+            <button
+              onClick={switchToSwaroop}
+              className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-xs"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Switch to Swaroop (Admin)
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* =========================================================================
           HERO BANNER (Exact Match to Stanford Chemicals Website Template)
           ========================================================================= */}
