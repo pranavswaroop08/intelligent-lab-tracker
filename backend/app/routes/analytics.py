@@ -90,3 +90,83 @@ def get_audit_logs():
         
     logs = query.limit(limit).all()
     return jsonify([l.to_dict() for l in logs])
+
+@analytics_bp.route('/views/<view_name>', methods=['GET'])
+def get_view_data(view_name):
+    allowed_views = {
+        'vw_chemical_inventory_summary',
+        'vw_asset_maintenance_status',
+        'vw_hazard_incompatibility_matrix',
+        'vw_dispensation_audit_trail',
+        'vw_lab_safety_compliance_snapshot'
+    }
+    if view_name not in allowed_views:
+        return jsonify({'error': f'Invalid view name. Allowed: {list(allowed_views)}'}), 400
+
+    try:
+        limit = min(int(request.args.get('limit', 20)), 100)
+        res = db.session.execute(db.text(f"SELECT * FROM {view_name} LIMIT {limit}"))
+        columns = list(res.keys())
+        rows = [dict(zip(columns, row)) for row in res.fetchall()]
+        return jsonify({
+            'view_name': view_name,
+            'columns': columns,
+            'rows': rows,
+            'count': len(rows)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@analytics_bp.route('/schema-metadata', methods=['GET'])
+def get_schema_metadata():
+    views_info = [
+        {
+            'name': 'vw_chemical_inventory_summary',
+            'purpose': 'Aggregates chemical specifications with live container batches, physical storage cabinets, and stock threshold warnings.',
+            'tables_joined': ['chemicals', 'hazard_classes', 'chemical_batches', 'storage_locations']
+        },
+        {
+            'name': 'vw_asset_maintenance_status',
+            'purpose': 'Consolidates instrument lifecycle, metrology calibration, days until next calibration due, and active borrower custody.',
+            'tables_joined': ['assets', 'laboratories', 'storage_locations', 'asset_borrow_logs', 'users']
+        },
+        {
+            'name': 'vw_hazard_incompatibility_matrix',
+            'purpose': 'Unpacks the self-referential chemical incompatibility table into human-readable hazard names, severity levels, and segregation protocols.',
+            'tables_joined': ['chemical_incompatibilities', 'hazard_classes (h1)', 'hazard_classes (h2)']
+        },
+        {
+            'name': 'vw_dispensation_audit_trail',
+            'purpose': 'Provides a complete chain-of-custody audit report for reagent dispensations, connecting user, batch lot, chemical, and witness.',
+            'tables_joined': ['dispensations', 'chemical_batches', 'chemicals', 'users', 'roles']
+        },
+        {
+            'name': 'vw_lab_safety_compliance_snapshot',
+            'purpose': 'Laboratory-level executive summary aggregating instruments, chemical stock containers, overdue calibrations, and active loans.',
+            'tables_joined': ['laboratories', 'assets', 'storage_locations', 'chemical_batches']
+        }
+    ]
+
+    triggers_info = [
+        {
+            'name': 'trg_after_dispensation_deduct_stock',
+            'timing': 'AFTER INSERT ON dispensations',
+            'purpose': 'Automatically deducts remaining quantity from chemical_batches, updates status to low or depleted, and writes immutable audit entry.'
+        },
+        {
+            'name': 'trg_after_calibration_update_asset',
+            'timing': 'AFTER INSERT ON asset_calibrations',
+            'purpose': 'Automatically resets asset operational status to available (or under_maintenance if failed), updates last and next calibration due dates, and writes audit record.'
+        },
+        {
+            'name': 'trg_before_borrow_verify_status',
+            'timing': 'BEFORE INSERT ON asset_borrow_logs',
+            'purpose': 'Enforces database integrity by rejecting loans if instrument status is not available (prevents double-booking).'
+        }
+    ]
+
+    return jsonify({
+        'tables_count': 14,
+        'views': views_info,
+        'triggers': triggers_info
+    })

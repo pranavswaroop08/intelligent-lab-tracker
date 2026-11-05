@@ -38,12 +38,8 @@ def dispense_chemical():
     if batch.current_quantity < amount:
         return jsonify({'error': f'Insufficient quantity. Requested: {amount} {batch.unit}, Available: {batch.current_quantity} {batch.unit}'}), 400
 
-    # Deduct quantity
-    batch.current_quantity -= amount
-    if batch.current_quantity == 0:
-        batch.status = 'depleted'
-    elif batch.current_quantity <= (batch.chemical.min_threshold_qty * 0.25):
-        batch.status = 'low'
+    # Calculate expected remaining quantity for record
+    remaining_qty = max(0.0, batch.current_quantity - amount)
 
     # If bottle was unopened, mark opened date today
     if not batch.opened_date:
@@ -57,13 +53,15 @@ def dispense_chemical():
         experiment_name=experiment,
         course_or_project=data.get('course_or_project', 'PESU DBMS Mini-Project Lab'),
         dispensed_at=datetime.utcnow(),
-        remaining_quantity_after=batch.current_quantity,
+        remaining_quantity_after=remaining_qty,
         witness_name=data.get('witness_name', 'Pranav Kaushal J'),
         notes=data.get('notes', '')
     )
 
     db.session.add(dispensation)
     db.session.commit()
+    # Refresh batch from DB to reflect the value updated by the AFTER INSERT trigger
+    db.session.refresh(batch)
 
     # Log audit
     audit = AuditLog(

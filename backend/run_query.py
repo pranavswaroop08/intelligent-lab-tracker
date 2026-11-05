@@ -42,6 +42,12 @@ def translate_query(q):
 
     if clean_upper in ("SHOW TABLES", "TABLES"):
         return "SELECT name AS Tables_in_lab_asset_tracker FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;"
+
+    if clean_upper in ("SHOW VIEWS", "VIEWS"):
+        return "SELECT name AS Views_in_lab_asset_tracker FROM sqlite_master WHERE type='view' ORDER BY name;"
+
+    if clean_upper in ("SHOW TRIGGERS", "TRIGGERS"):
+        return "SELECT name AS Trigger_Name, tbl_name AS Target_Table, 'AFTER INSERT' AS Timing_Event, 'ENABLED' AS Status FROM sqlite_master WHERE type='trigger' ORDER BY name;"
     
     if clean_upper.startswith("DESCRIBE ") or clean_upper.startswith("DESC "):
         parts = clean.split()
@@ -54,6 +60,12 @@ def translate_query(q):
         if len(parts) >= 4:
             tbl = parts[3].strip('`"\'')
             return f"SELECT sql AS 'Create Table' FROM sqlite_master WHERE type='table' AND name='{tbl}';"
+
+    if clean_upper.startswith("SHOW CREATE VIEW "):
+        parts = clean.split()
+        if len(parts) >= 4:
+            vw = parts[3].strip('`"\'')
+            return f"SELECT sql AS 'Create View' FROM sqlite_master WHERE type='view' AND name='{vw}';"
 
     return q
 
@@ -113,15 +125,19 @@ def main():
                 print("Exiting SQL console.")
                 break
             if line.lower() == "help":
-                print("\n" + "=" * 60)
-                print("  Recommended DBMS Evaluation Queries:")
-                print("=" * 60)
-                print("1. SHOW TABLES;")
-                print("2. DESCRIBE chemicals;")
-                print("3. SELECT id, cas_number, name, formula, min_threshold_qty FROM chemicals;")
-                print("4. SELECT b.barcode_qr, c.name, b.current_quantity, b.expiry_date FROM chemical_batches b JOIN chemicals c ON b.chemical_id = c.id;")
-                print("5. SELECT l.name, COUNT(b.id) AS total_containers FROM storage_locations l LEFT JOIN chemical_batches b ON l.id = b.location_id GROUP BY l.id;")
-                print("6. SELECT asset_tag, name, manufacturer, status FROM assets;\n")
+                print("\n" + "=" * 65)
+                print("  Recommended DBMS Evaluation Queries (Tables, Views, Triggers):")
+                print("=" * 65)
+                print("  1. SHOW TABLES;")
+                print("  2. SHOW VIEWS;")
+                print("  3. SHOW TRIGGERS;")
+                print("  4. DESCRIBE chemicals;")
+                print("  5. SELECT * FROM vw_chemical_inventory_summary;")
+                print("  6. SELECT * FROM vw_hazard_incompatibility_matrix;")
+                print("  7. SELECT * FROM vw_asset_maintenance_status;")
+                print("  8. SELECT * FROM vw_dispensation_audit_trail;")
+                print("  9. SELECT * FROM vw_lab_safety_compliance_snapshot;")
+                print(" 10. SELECT b.barcode_qr, c.name, b.current_quantity, b.status FROM chemical_batches b JOIN chemicals c ON b.chemical_id = c.id;\n")
                 continue
 
             buffer += " " + line

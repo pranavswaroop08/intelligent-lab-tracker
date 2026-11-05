@@ -69,8 +69,9 @@ def run_tests():
     assert len(assets) >= 6
     print(f"[PASS] 7. /api/assets - Fetched {len(assets)} laboratory assets")
 
-    # Borrow an available asset (Asset 1: UV-Vis Spectro)
-    res = client.post('/api/assets/1/borrow', json={
+    # Borrow an available asset dynamically
+    avail_asset = [a for a in assets if a['status'] == 'available'][0]
+    res = client.post(f"/api/assets/{avail_asset['id']}/borrow", json={
         'user_id': 1,
         'purpose': 'Biomolecular absorption kinetics testing',
         'borrow_duration_hours': 2
@@ -78,17 +79,17 @@ def run_tests():
     assert res.status_code == 200
     borrow_data = res.get_json()
     assert borrow_data['asset']['status'] == 'in_use'
-    print(f"[PASS] 8. /api/assets/1/borrow - Asset status transitioned to: {borrow_data['asset']['status']}")
+    print(f"[PASS] 8. /api/assets/{avail_asset['id']}/borrow - Asset status transitioned to: {borrow_data['asset']['status']}")
 
     # Return asset
-    res = client.post('/api/assets/1/return', json={
+    res = client.post(f"/api/assets/{avail_asset['id']}/return", json={
         'condition_on_return': 'Pristine, lens wiped',
         'runtime_hours': 1.8
     })
     assert res.status_code == 200
     return_data = res.get_json()
     assert return_data['asset']['status'] == 'available'
-    print(f"[PASS] 9. /api/assets/1/return - Returned asset status: {return_data['asset']['status']}")
+    print(f"[PASS] 9. /api/assets/{avail_asset['id']}/return - Returned asset status: {return_data['asset']['status']}")
 
     # 8. Chemical Dispensation & Volumetric Deduction
     batch_res = client.get('/api/chemicals/batches')
@@ -131,8 +132,24 @@ def run_tests():
     assert 'compliance_score' in dash['summary']
     print(f"[PASS] 13. /api/analytics/dashboard - Compliance Score: {dash['summary']['compliance_score']}% (Grade: {dash['summary']['compliance_grade']})")
 
+    # 12. Database View Querying
+    res = client.get('/api/analytics/views/vw_chemical_inventory_summary')
+    assert res.status_code == 200
+    vw_res = res.get_json()
+    assert len(vw_res.get('rows', [])) > 0
+    print(f"[PASS] 14. /api/analytics/views - Queried {len(vw_res['rows'])} rows from 'vw_chemical_inventory_summary'")
+
+    # 13. Schema Metadata (14 Tables, 5 Views, 3 Triggers)
+    res = client.get('/api/analytics/schema-metadata')
+    assert res.status_code == 200
+    meta = res.get_json()
+    assert meta['tables_count'] == 14
+    assert len(meta['views']) == 5
+    assert len(meta['triggers']) == 3
+    print(f"[PASS] 15. /api/analytics/schema-metadata - Verified 14 Tables, 5 Views, and 3 Active Triggers")
+
     print("\n" + "=" * 60)
-    print("  ALL 13 API TEST CASES PASSED SUCCESSFULLY (100%)!")
+    print("  ALL 15 API TEST CASES PASSED SUCCESSFULLY (100%)!")
     print("=" * 60 + "\n")
 
 if __name__ == '__main__':

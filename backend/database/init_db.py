@@ -26,6 +26,200 @@ def init_database():
         print("[InitDB] Creating database tables...")
         db.create_all()
 
+        # Install Database Triggers
+        print("[InitDB] Installing Database Triggers...")
+        triggers_sql = [
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_after_dispensation_deduct_stock
+            AFTER INSERT ON dispensations
+            FOR EACH ROW
+            BEGIN
+                UPDATE chemical_batches
+                SET current_quantity = MAX(0.0, current_quantity - NEW.dispensed_amount),
+                    status = CASE
+                        WHEN (current_quantity - NEW.dispensed_amount) <= 0.0 THEN 'depleted'
+                        WHEN (current_quantity - NEW.dispensed_amount) <= 500.0 THEN 'low'
+                        ELSE 'available'
+                    END
+                WHERE id = NEW.batch_id;
+
+                INSERT INTO audit_logs (user_id, user_name, action, entity_type, entity_id, details, ip_address, created_at)
+                VALUES (
+                    NEW.user_id,
+                    (SELECT name FROM users WHERE id = NEW.user_id),
+                    'DISPENSE',
+                    'chemical_batch',
+                    NEW.batch_id,
+                    'Trigger trg_after_dispensation_deduct_stock automatically deducted ' || NEW.dispensed_amount || ' ' || NEW.unit || ' for experiment: ' || NEW.experiment_name,
+                    '127.0.0.1',
+                    DATETIME('now')
+                );
+            END;
+            """,
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_after_calibration_update_asset
+            AFTER INSERT ON asset_calibrations
+            FOR EACH ROW
+            BEGIN
+                UPDATE assets
+                SET last_calibration_date = NEW.calibration_date,
+                    next_calibration_due = NEW.next_due_date,
+                    status = CASE
+                        WHEN NEW.calibration_status IN ('passed', 'adjusted') THEN 'available'
+                        ELSE 'under_maintenance'
+                    END
+                WHERE id = NEW.asset_id;
+
+                INSERT INTO audit_logs (user_id, user_name, action, entity_type, entity_id, details, ip_address, created_at)
+                VALUES (
+                    1,
+                    NEW.technician_name,
+                    'CALIBRATE',
+                    'asset',
+                    NEW.asset_id,
+                    'Trigger trg_after_calibration_update_asset updated next calibration due to ' || NEW.next_due_date || ' (Outcome: ' || NEW.calibration_status || ')',
+                    '127.0.0.1',
+                    DATETIME('now')
+                );
+            END;
+            """
+        ]
+        for trg in triggers_sql:
+            try:
+                db.session.execute(db.text(trg))
+            except Exception as e:
+                print(f"[InitDB] Trigger creation note: {e}")
+        db.session.commit()
+
+        # Install Database Views (based on 14-table ER Diagram)
+        print("[InitDB] Installing Database Views...")
+        views_sql = [
+            """
+            CREATE VIEW IF NOT EXISTS vw_chemical_inventory_summary AS
+            SELECT 
+                c.id AS chemical_id,
+                c.cas_number,
+                c.name AS chemical_name,
+                c.formula,
+                h.name AS hazard_category,
+                h.code AS hazard_code,
+                c.nfpa_health,
+                c.nfpa_flammability,
+                c.nfpa_instability,
+                c.min_threshold_qty,
+                c.unit,
+                COUNT(b.id) AS total_batches_count,
+                COALESCE(SUM(b.current_quantity), 0.0) AS total_current_quantity,
+                CASE 
+                    WHEN COALESCE(SUM(b.current_quantity), 0.0) <= c.min_threshold_qty THEN 'CRITICAL_LOW_STOCK'
+                    WHEN COALESCE(SUM(b.current_quantity), 0.0) <= (c.min_threshold_qty * 1.5) THEN 'WARNING_LOW_STOCK'
+                    ELSE 'ADEQUATE_STOCK'
+                END AS stock_health_status
+            FROM chemicals c
+            LEFT JOIN hazard_classes h ON c.hazard_class_id = h.id
+            LEFT JOIN chemical_batches b ON b.chemical_id = c.id AND b.status != 'depleted'
+            GROUP BY 
+                c.id, c.cas_number, c.name, c.formula, h.name, h.code, 
+                c.nfpa_health, c.nfpa_flammability, c.nfpa_instability, 
+                c.min_threshold_qty, c.unit;
+            """,
+            """
+            CREATE VIEW IF NOT EXISTS vw_asset_maintenance_status AS
+            SELECT 
+                a.id AS asset_id,
+                a.asset_tag,
+                a.name AS instrument_name,
+                a.category,
+                a.manufacturer,
+                a.model_number,
+                l.code AS lab_code,
+                loc.location_code AS cabinet_code,
+                a.status AS operational_status,
+                a.last_calibration_date,
+                a.next_calibration_due,
+                a.calibration_interval_days,
+                CASE 
+                    WHEN a.next_calibration_due <= CURRENT_DATE THEN 'OVERDUE'
+                    ELSE 'VALID'
+                END AS calibration_urgency,
+                b.borrowed_at,
+                u.name AS current_borrower_name,
+                u.srn_or_emp_id AS borrower_srn
+            FROM assets a
+            JOIN laboratories l ON a.lab_id = l.id
+            LEFT JOIN storage_locations loc ON a.location_id = loc.id
+            LEFT JOIN asset_borrow_logs b ON b.asset_id = a.id AND b.status = 'active'
+            LEFT JOIN users u ON b.user_id = u.id;
+            """,
+            """
+            CREATE VIEW IF NOT EXISTS vw_hazard_incompatibility_matrix AS
+            SELECT 
+                ci.id AS rule_id,
+                h1.code AS hazard_class_a_code,
+                h1.name AS hazard_class_a_name,
+                h1.storage_category AS storage_a_category,
+                h2.code AS hazard_class_b_code,
+                h2.name AS hazard_class_b_name,
+                h2.storage_category AS storage_b_category,
+                ci.severity AS hazard_severity,
+                ci.reason AS chemical_reaction_hazard,
+                ci.safety_protocol AS required_segregation_protocol
+            FROM chemical_incompatibilities ci
+            JOIN hazard_classes h1 ON ci.hazard_class_a_id = h1.id
+            JOIN hazard_classes h2 ON ci.hazard_class_b_id = h2.id;
+            """,
+            """
+            CREATE VIEW IF NOT EXISTS vw_dispensation_audit_trail AS
+            SELECT 
+                d.id AS dispensation_id,
+                d.dispensed_at,
+                c.name AS chemical_name,
+                c.cas_number,
+                b.batch_lot_number,
+                b.barcode_qr,
+                d.dispensed_amount,
+                d.unit,
+                d.remaining_quantity_after,
+                u.name AS dispensed_by_user,
+                u.srn_or_emp_id AS operator_srn,
+                r.name AS user_role,
+                d.witness_name,
+                d.experiment_name,
+                d.course_or_project
+            FROM dispensations d
+            JOIN chemical_batches b ON d.batch_id = b.id
+            JOIN chemicals c ON b.chemical_id = c.id
+            JOIN users u ON d.user_id = u.id
+            JOIN roles r ON u.role_id = r.id;
+            """,
+            """
+            CREATE VIEW IF NOT EXISTS vw_lab_safety_compliance_snapshot AS
+            SELECT 
+                l.id AS lab_id,
+                l.code AS lab_code,
+                l.name AS laboratory_name,
+                l.building,
+                l.floor,
+                COUNT(DISTINCT a.id) AS total_instruments_count,
+                SUM(CASE WHEN a.status = 'in_use' THEN 1 ELSE 0 END) AS active_borrowed_instruments,
+                SUM(CASE WHEN a.next_calibration_due <= CURRENT_DATE THEN 1 ELSE 0 END) AS overdue_calibration_instruments,
+                COUNT(DISTINCT b.id) AS active_chemical_batches_count,
+                SUM(CASE WHEN b.expiry_date < CURRENT_DATE THEN 1 ELSE 0 END) AS expired_chemical_batches_count
+            FROM laboratories l
+            LEFT JOIN assets a ON a.lab_id = l.id
+            LEFT JOIN storage_locations loc ON loc.lab_id = l.id
+            LEFT JOIN chemical_batches b ON b.location_id = loc.id AND b.status != 'depleted'
+            GROUP BY 
+                l.id, l.code, l.name, l.building, l.floor;
+            """
+        ]
+        for vw in views_sql:
+            try:
+                db.session.execute(db.text(vw))
+            except Exception as e:
+                print(f"[InitDB] View creation note: {e}")
+        db.session.commit()
+
         # Check if already seeded
         if User.query.first():
             print("[InitDB] Database already initialized and seeded with records.")

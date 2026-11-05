@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, ShieldCheck, ShoppingCart, FileText, User, Shield, Wrench, HelpCircle, Check } from 'lucide-react';
+import { Search, ChevronDown, ShieldCheck, ShoppingCart, FileText, User, Shield, Wrench, HelpCircle, Check, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import RoleComparisonModal from './RoleComparisonModal';
 
@@ -103,6 +103,16 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI, onOpenDispen
             >
               <HelpCircle className="w-3 h-3" />
               <span>Differences (Viva)</span>
+            </button>
+
+            {/* ER Diagram & Views Button */}
+            <button
+              onClick={() => setActiveTab('audit')}
+              className="px-2 py-0.5 rounded bg-[#13b5ea]/20 hover:bg-[#13b5ea]/30 text-cyan-300 font-semibold transition flex items-center gap-1 border border-cyan-500/40"
+              title="Open ER Diagram (14 Tables), Database Views (5), and Triggers (3)"
+            >
+              <Database className="w-3 h-3 text-[#13b5ea]" />
+              <span>ER Diagram & Views</span>
             </button>
 
             <span className="hidden sm:inline-block text-slate-600">|</span>
@@ -295,7 +305,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI, onOpenDispen
                   : 'text-white/90 hover:text-white hover:bg-white/10'
               }`}
             >
-              ABOUT US (AUDIT)
+              ABOUT US (AUDIT & ER)
             </button>
           </div>
 

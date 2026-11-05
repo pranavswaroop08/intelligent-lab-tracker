@@ -37,6 +37,8 @@ export const api = {
   // Analytics & Dashboard
   getDashboard: () => request('/analytics/dashboard'),
   getAuditLogs: (params = '') => request(`/analytics/audit-logs${params ? '?' + params : ''}`),
+  getViewData: (viewName) => request(`/analytics/views/${viewName}`),
+  getSchemaMetadata: () => request('/analytics/schema-metadata'),
 
   // Chemicals & Batches
   getChemicals: (params = '') => request(`/chemicals${params ? '?' + params : ''}`),
